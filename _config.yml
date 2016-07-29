@@ -39,9 +39,9 @@ favicon: "img/sam_taeguk.ico"
 # Header layout #
 ################
 
-black-favicon: "/img/black-lab-glass.ico"
+black-favicon: "img/sam_taeguk.ico"
 
-background-img: "../img/intro-bg.jpg"
+background-img: "../img/golden_mountain_1366x768.png"
 
 ##############################
 # Dynamic Text on the Header #
