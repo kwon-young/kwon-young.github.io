@@ -112,15 +112,18 @@ syntax-highlight: True
 
 events:
   - image: "/img/timeline/spidertocat.png"
-    date: "September 2013 - Today"
-    description: "Saving the neighborhood!"
-  - image: "/img/timeline/baracktocat.jpg"
-    date: "September 2007 - August 2013"
-    description: "Started coding"
+    date: "September 2016 - Now"
+    description: "Started my Phd !"
+  - image: "/img/timeline/enib_logo.jpg"
+    date: "September 2011 - 2016"
+    description: "Engineering studies at ENIB: École Nationale des Ingénieurs de Brest"
+  - image: "./img/timeline/language_c.png"
+    date: "Since 2009"
+    description: "Started coding by learning the C language"
 
 # First image of the Timeline
 
-timeline-img: "/img/timeline/default.png"
+timeline-img: "/img/sam_taeguk.ico"
 
 ###########
 # Contact #
