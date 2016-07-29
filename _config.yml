@@ -33,13 +33,13 @@ author: "Kwon-Young Choi"
 title: "{ Kwon-Young Choi }"
 description: "Blog and website of Kwon-Young Choi, blogging mainly for tech. Opinions expressed are mine."
 keywords: "kwon-young, thomas, choi"
-favicon: "img/sam_taeguk.ico"
+favicon: "/img/sam_taeguk.ico"
 
 ################
 # Header layout #
 ################
 
-black-favicon: "img/sam_taeguk.ico"
+black-favicon: "/img/sam_taeguk.ico"
 
 background-img: "../img/golden_mountain_1366x768.png"
 
@@ -58,7 +58,7 @@ lines: # You can add HTML Tags in the Text
   - text: "Carpe Diem."
   - text: "Sursum Corda !"
 
-me-img: "img/sam_taeguk.ico"
+me-img: "/img/sam_taeguk.ico"
 
 ##############################
 # Color the browser elements #
