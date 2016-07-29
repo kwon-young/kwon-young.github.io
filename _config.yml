@@ -29,11 +29,11 @@ force-https: True
 #############
 
 lang: "en"
-author: "John Smith"
-title: "{ John Smith }"
-description: "Blog and website of John Smith, blogging mainly for tech. Opinions expressed are mine."
-keywords: "smith, jones, personal, jekyll, theme"
-favicon: "/img/favicon.ico"
+author: "Kwon-Young Choi"
+title: "{ Kwon-Young Choi }"
+description: "Blog and website of Kwon-Young Choi, blogging mainly for tech. Opinions expressed are mine."
+keywords: "kwon-young, thomas, choi"
+favicon: "img/sam_taeguk.ico"
 
 ################
 # Header layout #
