@@ -56,7 +56,7 @@ start-delay: 200
 delete-delay: 5000
 lines: # You can add HTML Tags in the Text
   - text: "Carpe Diem."
-  - text: "Sursum Corda !"
+  - text: ":wq!"
 
 me-img: "/img/sam_taeguk.ico"
 
@@ -91,10 +91,10 @@ post-preview-words: 96
 
 paginate: 5
 
-email-share: True
+email-share: False
 fb-share: False
 twitter-share: False
-linkedin-share: True
+linkedin-share: False
 reddit-share: False
 google-plus-share: False
 tumblr-share: False
@@ -129,7 +129,7 @@ timeline-img: "/img/sam_taeguk.ico"
 # Contact #
 ###########
 
-email: "kwon-young.choi@hotmail.fr"
+email: "kwon-young@kchoi.me"
 
 ################
 # Author Blurb #
@@ -139,7 +139,7 @@ email: "kwon-young.choi@hotmail.fr"
 # This works best when your author blurb image has a transparent background, or matches your site background color.
 
 # if the author_blurb is not set, then this feature is skipped
-author_blurb: "My name is Kwon-Young Choi and I'm a Phd student at the IRISA laboratory in Rennes."
+#author_blurb: "My name is Kwon-Young Choi and I'm a Phd student at the IRISA laboratory in Rennes."
 author_blurb_image: "/img/author.png"
 
 ##################
