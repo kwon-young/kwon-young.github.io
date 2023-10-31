@@ -1,0 +1,33 @@
+baseURL = "https://kwon-young.github.io/"
+languageCode = "en-us"
+title = "Kwon-Young Choi"
+copyright = "Creative Commons BY 3.0"
+theme = "shimong"
+pygmentsCodeFences = true
+paginate = 100
+
+[permalinks]
+	blog = "/blog/:year/:slug/"
+
+[author]
+	name = "Kwon-Young Choi"
+
+[taxonomies]
+	tag = "tags"
+
+[outputs]
+	home = ["HTML"]
+	section = ["HTML", "RSS", "Atom"]
+
+[mediaTypes."application/atom+xml"]
+	suffixes = ["xml"]
+
+[outputFormats.RSS]
+	mediaType = "application/xml"
+	baseName = "rss"
+[outputFormats.Atom]
+	mediaType = "application/atom+xml"
+	baseName = "atom"
+
+[markup.goldmark.renderer]
+	unsafe = true

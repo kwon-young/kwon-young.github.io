@@ -1,0 +1,5 @@
+<nav>
+	{{- if not .IsHome }}<a href="{{ .Site.BaseURL }}">home</a> &middot;{{ end }}
+	<a href="{{ .Site.BaseURL }}blog">blog</a> &middot;
+	<a rel="me" href="{{ .Site.BaseURL }}about">about</a>
+</nav>
