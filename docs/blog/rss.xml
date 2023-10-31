@@ -1,1 +1,324 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kwon-Young Choi</title><link>https://kwon-young.github.io/blog/</link><description>Recent content in Blog on Kwon-Young Choi</description><generator>Hugo</generator><language>en-us</language><copyright>Creative Commons BY 3.0</copyright><atom:link href="https://kwon-young.github.io/blog/rss.xml" rel="self" type="application/xml"/></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kwon-Young Choi</title><link>https://kwon-young.github.io/blog/</link><description>Recent content in Blog on Kwon-Young Choi</description><generator>Hugo</generator><language>en-us</language><copyright>Creative Commons BY 3.0</copyright><lastBuildDate>Tue, 31 Oct 2023 17:11:09 +0100</lastBuildDate><atom:link href="https://kwon-young.github.io/blog/rss.xml" rel="self" type="application/xml"/><item><title>Triangle</title><link>https://kwon-young.github.io/blog/2023/triangle/</link><pubDate>Tue, 31 Oct 2023 17:11:09 +0100</pubDate><guid>https://kwon-young.github.io/blog/2023/triangle/</guid><description>
+&lt;link rel="stylesheet" type="text/css" href="https://jsxgraph.org/distrib/jsxgraph.css" />
+&lt;script type="text/javascript" src="https://jsxgraph.org/distrib/jsxgraphcore.js">&lt;/script>
+&lt;p>Since it has been a few years I started working on my &lt;a href="https://github.com/kwon-young/music">music notation grammar&lt;/a>, I thought about how I could explain what I am doing to other peoples.
+I believe that for anyone else than me, some of the prolog code in that repository would be quite hard to grok.&lt;/p>
+&lt;p>That&amp;rsquo;s why I thought of a simplified example that could explain some of the logic and design decision behind the project.
+This post is only part 1 of a series I plan to do on the subject.&lt;/p>
+&lt;h2 id="introduction">Introduction&lt;/h2>
+&lt;p>So first, here is what we want to do.
+The basic idea of the project is to write a program that relates graphical primitives with high level semantic structure.
+Let&amp;rsquo;s take concrete examples of program that do exactly that:&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>programs like LaTeX, MuseScore or even Word take a high level description of a document and can produce a graphical representation of the document consisting of a few graphical primitives like glyphes, segment, etc.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>programs like OCRs can take an image of a document and can recognize the text inside of the document image in order to produce a high level representation of the document.
+Although OCRs takes as input an image of a document instead of graphical primitives, most of them will first recognize a small number of graphical primitives like letters or words and then reconstruct high level semantic structures like paragraph, titles etc.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>My own project linked above target is to write a graphical grammar of the common music notation.
+This notation is used to typeset music score since the early of 18th century and is a very complex set of rules specifying the use and placement of music symbols to transcribe music on paper.
+Therefore, the goal I have for this project is to be able to write a prolog program that relates music scores in the MEI format (a format akin to MusicXML) with a set of graphical primitives like music symbols and segments.&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>Music notation is a very complicated beast so we will simplify things a lot in this first post and try something simpler: middle school geometry!&lt;/p>
+&lt;h2 id="basics">Basics&lt;/h2>
+&lt;p>Let&amp;rsquo;s start with a much more basic program.
+A program that relates basic 2D euclidean geometrical figures with their graphical primitives.
+So, for example, let&amp;rsquo;s take the most basic geometric figure: the triangle.
+And for graphical primitives, let&amp;rsquo;s limit ourselves to points and segments.&lt;/p>
+&lt;p>We will use prolog compound terms to manipulate these data structures:&lt;/p>
+&lt;ul>
+&lt;li>A 2D point with coordinates X, Y: &lt;code>point(X, Y)&lt;/code>&lt;/li>
+&lt;li>A segment, which is a pair of points Start and End: &lt;code>seg(Start, End)&lt;/code>&lt;/li>
+&lt;li>A triangle, which can be represented as three points: &lt;code>triangle(A, B, C)&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>The graphical representation of a triangle ABC is done by drawing three segments:&lt;/p>
+&lt;ul>
+&lt;li>one from point A to point B&lt;/li>
+&lt;li>one from point B to point C&lt;/li>
+&lt;li>one from point C to point A&lt;/li>
+&lt;/ul>
+&lt;div id="jxgbox" class="jxgbox" style="width:400px; height:400px;">&lt;/div>
+&lt;script type="text/javascript">
+var board = JXG.JSXGraph.initBoard('jxgbox', {boundingbox: [-7, 7, 7, -7], axis: true});
+var p = board.create('point',[-3,3], {name: 'A'});
+var p = board.create('point',[3,3], {name: 'B'});
+var p = board.create('point',[2,-2], {name: 'C'});
+var li = board.create('line',['A','B'], {straightFirst:false, straightLast:false, strokeColor:'#000000', strokeWidth:2});
+var li = board.create('line',['B','C'], {straightFirst:false, straightLast:false, strokeColor:'#000000', strokeWidth:2});
+var li = board.create('line',['C','A'], {straightFirst:false, straightLast:false, strokeColor:'#000000', strokeWidth:2});
+&lt;/script>
+&lt;p>Let&amp;rsquo;s translate this to prolog:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">triangle_cond&lt;/span>(&lt;span style="color:#a6e22e">triangle&lt;/span>(A, B, C), &lt;span style="color:#a6e22e">seg&lt;/span>(A, B), &lt;span style="color:#a6e22e">seg&lt;/span>(B, C), &lt;span style="color:#a6e22e">seg&lt;/span>(C, A)).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
+&lt;p>&lt;strong>NOTE&lt;/strong>:
+A little note about code convention in this post: predicates that relates geometrical figures with graphical primitives will always end in &lt;code>_cond&lt;/code>&lt;/p>
+&lt;/blockquote>
+&lt;p>Interestingly, this knowledge can be reduced to a single prolog fact.
+One thing I love about this line of code is that prolog gives us the ability to specify only the knowledge we are interested in.
+Notice how we didn&amp;rsquo;t had to define how a point is represented here.
+We could use this code with 2D points, but also 3D or in any number of dimension.
+We could also use atoms as points, like &lt;code>'A'&lt;/code>, if we are doing some abstract geometry application.
+Finally, by using variables instead of ground term for points, we can represent any triangle in the infinite set of all ground triangles!&lt;/p>
+&lt;p>Let&amp;rsquo;s move on to the next step, which is to relate this triangle with a list of graphical primitives.
+Since, we want to compose and manipulate multiple geometrical figures with a single list of graphical primitives, we will use the prolog DCG notation which is well suited for this use case:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(Triangle) --&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> { &lt;span style="color:#a6e22e">triangle_cond&lt;/span>(Triangle, Seg1, Seg2, Seg3) },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [Seg1, Seg2, Seg3].
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
+&lt;p>&lt;strong>NOTE&lt;/strong>:
+A little note about code convention in this post: DCG predicates that could be confused with plain compound terms will always end in &lt;code>_dcg&lt;/code>&lt;/p>
+&lt;/blockquote>
+&lt;p>For those that are not familiar with the DCG notation, &lt;a href="https://www.metalevel.at/prolog/dcg">here is a good primer&lt;/a>.
+If you are already familiar with DCGs, you can just skip the paragraph below.&lt;/p>
+&lt;p>To just explain briefly, a DCG predicate can be used to describe a list.
+It has this weird neck &lt;code>--&amp;gt;&lt;/code> and the arity is annotated with a double shlash like this: &lt;code>triangle_dcg//1&lt;/code>.
+The reason for the double slash is because, internally, prolog translate DCG predicates by adding 2 additional parameters to the head of the clause.
+This two additional predicates represent a difference list, which is threaded through inside the body of the DCG predicate.
+If you don&amp;rsquo;t know what is a difference list, it&amp;rsquo;s okay, we won&amp;rsquo;t need it here, but it is a very useful prolog pattern to learn.
+The braces &lt;code>{}&lt;/code> around &lt;code>triangle_cond/4&lt;/code> is there to tell prolog that &lt;code>triangle_cond/4&lt;/code> is not a DCG predicate but a plain prolog predicate to call normally.&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;strong>NOTE&lt;/strong>:
+A little remark on this idea to relates a list of graphical primitives with high level construct with a grammar.
+I believe this type of idea was very popular in the 90s.
+I was exposed to it through my PhD adviser, Bertrand Coüasnon, which implemented this idea in his thesis with the &lt;a href="https://ieeexplore.ieee.org/abstract/document/953786">DMOS system&lt;/a> in a lambda prolog dialect with a grammar formalism called EPF.&lt;/p>
+&lt;/blockquote>
+&lt;p>Let&amp;rsquo;s see how we can use this DCG in the prolog top level by posting the most general query:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(Triangle), L, R).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A)|R].
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can see that prolog has build us a &lt;code>triangle&lt;/code> compound term together with 3 segments with the correct set of points.
+As you can see the pair &lt;code>L&lt;/code> and &lt;code>R&lt;/code> is a difference list where &lt;code>R&lt;/code> is the tail of the list &lt;code>L&lt;/code>.
+This allows us to compose multiple DCG predicates as we will see later.
+If we want to close the list, we can just call the &lt;code>phrase/2&lt;/code> predicate without the &lt;code>R&lt;/code> argument.&lt;/p>
+&lt;p>We can already do a lot of different things with this predicate.
+We can &lt;em>draw&lt;/em> a specific triangle:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>)), L, R).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>)|R].
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can recognize a triangle from a set of segments:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(Triangle), [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>)]).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Or reject sets of graphical primitives that do not form a triangle:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(Triangle), [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>)]).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">false&lt;/span>.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Or test that a specific triangle is related to a set of segments:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>)), [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>)]).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">true&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>)), [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>)]).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">false&lt;/span>.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="the-ordering-problem">The ordering problem&lt;/h2>
+&lt;p>Unfortunately, our DCG clause &lt;code>triangle_dcg&lt;/code> is too strict about the possible segment lists we can use to build a triangle.
+For example, the following query fails:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(Triangle), [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>)]).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">false&lt;/span>.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>There is no reason why segment BC should be before segment CA.
+This is especially true when manipulating graphical primitives.
+There is no evident ordering of the primitives, and we cannot assume a specific ordering when defining our grammar.&lt;/p>
+&lt;p>In order to fix this, we will define a predicate &lt;code>term&lt;/code> which job will be to find and consume a given graphical primitive:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">term&lt;/span>(X) --&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [X].
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">term&lt;/span>(X), [CurX] --&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [CurX],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(X).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The first clause tries to match the given primitive &lt;code>X&lt;/code>.
+If it fails, we go to the second clause and skip the current element &lt;code>CurX&lt;/code> and try to match the next element by doing a recursive call.
+Coincidentally, the standard &lt;code>select/3&lt;/code> predicate can be used instead transparently and will do exactly the same thing.&lt;/p>
+&lt;p>Now, let&amp;rsquo;s rewrite our &lt;code>triangle_dcg//1&lt;/code> DCG predicate to use &lt;code>term//1&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(Triangle) --&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> { &lt;span style="color:#a6e22e">triangle_cond&lt;/span>(Triangle, Seg1, Seg2, Seg3) },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(Seg1),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(Seg2),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(Seg3).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Let&amp;rsquo;s retry our most general query:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(Triangle), L, R).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A)|R] ;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C), &lt;span style="color:#66d9ef">_&lt;/span>D, &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A)|&lt;span style="color:#66d9ef">_&lt;/span>E],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>R &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#66d9ef">_&lt;/span>D|&lt;span style="color:#66d9ef">_&lt;/span>E]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Action (&lt;span style="color:#e6db74">h&lt;/span> &lt;span style="color:#e6db74">for&lt;/span> &lt;span style="color:#e6db74">help&lt;/span>) &lt;span style="color:#e6db74">?&lt;/span> &lt;span style="color:#e6db74">abort&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">% Execution Aborted&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>As you can see, the first solution is the same as our previous result but now, we get multiple other solutions.
+In fact, we get an infinity many more solutions.
+From this little change in the code, we went from a single deterministic solution to infinitely many.
+This can be good, because it will allow us to get more solutions as we will see below.
+This could be also bad, since the complexity of the code has risen dramatically and it could be quite easy to be trapped into an infinite recursion loop.
+But we will worry about this later.&lt;/p>
+&lt;p>One new characteristic of the second results is that the grammar is now resistant to noise, i.e. non relevant graphical primitives.&lt;/p>
+&lt;p>In the query above, we enumerate the solutions in a depth first manner, lengthening the list to infinity by searching for the last segment deeper and deeper.
+Instead, a breadth first search strategy could give us some more interesting solutions.
+This can be done by using the &lt;code>length/2&lt;/code> predicate before the call to &lt;code>phrase/3&lt;/code>.
+Let&amp;rsquo;s see all solutions with a list &lt;code>L&lt;/code> of length 3:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">length&lt;/span>(L, &lt;span style="color:#ae81ff">3&lt;/span>), &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(Triangle), L, R).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A)],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>R &lt;span style="color:#f92672">=&lt;/span> [] ;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C)],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>R &lt;span style="color:#f92672">=&lt;/span> [] ;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C)],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>R &lt;span style="color:#f92672">=&lt;/span> [] ;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A)],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>R &lt;span style="color:#f92672">=&lt;/span> [] ;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A)],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>R &lt;span style="color:#f92672">=&lt;/span> [] ;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C)],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>B, &lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>A),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>R &lt;span style="color:#f92672">=&lt;/span> [] ;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">false&lt;/span>.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If you count them, that&amp;rsquo;s 6 solutions which are all the permutations of list of length 3 with no replacements.&lt;/p>
+&lt;p>So, we can post our previous wrongly failing query it should now work:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(Triangle), [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>)]).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>) ;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>) ;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">triangle&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;B&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;C&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;A&amp;#39;&lt;/span>) ;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">false&lt;/span>.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Great, it even gave us all the different representation of the ABC triangle!&lt;/p>
+&lt;p>Let&amp;rsquo;s move on to another type of triangle, the equilateral triangle.&lt;/p>
+&lt;h2 id="the-equilateral-triangle">The equilateral triangle&lt;/h2>
+&lt;p>The property of an equilateral triangle is that all three sides have the same length.
+Let&amp;rsquo;s define the compound term for such a triangle:&lt;/p>
+&lt;ul>
+&lt;li>an equilateral triangle ABC: &lt;code>equilateral_triangle(A, B, C)&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>And let&amp;rsquo;s extend the &lt;code>triangle_cond/4&lt;/code> predicate to relate such a triangle with its three sides:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">triangle_cond&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(A, B, C), Seg1, Seg2, Seg3) :-
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">triangle_cond&lt;/span>(&lt;span style="color:#a6e22e">triangle&lt;/span>(A, B, C), Seg1, Seg2, Seg3),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg_length&lt;/span>(Seg1, Len),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg_length&lt;/span>(Seg2, Len),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg_length&lt;/span>(Seg3, Len).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We first reuse the &lt;code>triangle_cond/4&lt;/code> first clause since an equilateral triangle is itself a triangle.
+This will correctly setup the three segments with the triangle points.
+Next, we unify all three segment length to the same length &lt;code>Len&lt;/code> using the yet to be defined &lt;code>seg_length/2&lt;/code> predicate.&lt;/p>
+&lt;p>To compute a segment length, we will use the well known Pythagoras theorem:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">seg_length&lt;/span>(&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(X1, Y1), &lt;span style="color:#a6e22e">point&lt;/span>(X2, Y2)), Len) :-
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Len &lt;span style="color:#f92672">is&lt;/span> &lt;span style="color:#a6e22e">sqrt&lt;/span>((X2 &lt;span style="color:#f92672">-&lt;/span> X1)&lt;span style="color:#e6db74">**&lt;/span>&lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#f92672">+&lt;/span> (Y2 &lt;span style="color:#f92672">-&lt;/span> Y1)&lt;span style="color:#e6db74">**&lt;/span>&lt;span style="color:#ae81ff">2&lt;/span>).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This predicate will only work on 2D segments, but we have to start from somewhere.&lt;/p>
+&lt;p>Let&amp;rsquo;s try our new equilateral triangle predicate with the most general query:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(A, B, C)), L, R).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ERROR&lt;span style="color:#e6db74">:&lt;/span> Arguments &lt;span style="color:#e6db74">are&lt;/span> &lt;span style="color:#f92672">not&lt;/span> &lt;span style="color:#e6db74">sufficiently&lt;/span> &lt;span style="color:#e6db74">instantiated&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ERROR&lt;span style="color:#e6db74">:&lt;/span> In&lt;span style="color:#e6db74">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ERROR&lt;span style="color:#e6db74">:&lt;/span> [&lt;span style="color:#ae81ff">15&lt;/span>] &lt;span style="color:#66d9ef">_&lt;/span>&lt;span style="color:#ae81ff">31816&lt;/span> &lt;span style="color:#f92672">is&lt;/span> &lt;span style="color:#a6e22e">sqrt&lt;/span>((...)&lt;span style="color:#e6db74">+&lt;/span>(...))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Well&amp;hellip; As you probably would have predicted, reality hit us on the face with the fact that prolog arithmetic is not pure.
+It will only work in a single direction.
+So one solution would be to try and modify the order of predicates in the DCG like this:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(Triangle) --&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(Seg1),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(Seg2),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(Seg3),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> { &lt;span style="color:#a6e22e">triangle_cond&lt;/span>(Triangle, Seg1, Seg2, Seg3) }.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>In this case, &lt;code>triangle_cond/4&lt;/code> would become a post condition instead of a precondition.
+However, the search strategy of the grammar would become a kind of generate and test strategy, which would be intractable with only a small number of graphical primitives.
+In situation like this, modern prolog has come up with a solution called &lt;strong>Constraints&lt;/strong>.&lt;/p>
+&lt;h2 id="constraints-programming">Constraints programming&lt;/h2>
+&lt;p>The idea of constraint programming is to specify as early as possible a maximum of knowledge about the problem at hand.
+This knowledge can be used to prune the search tree and find results with less computation.
+A very well known type of constraint programming is constraints over integers with libraries like &lt;a href="https://www.swi-prolog.org/pldoc/man?section=clpfd">&lt;code>clpfd&lt;/code>&lt;/a>.
+A very useful byproduct of such library is that it introduce pure arithmetic, with arithmetic operations that can be used in any direction.
+That&amp;rsquo;s perfect for what we want to do!&lt;/p>
+&lt;p>However, our problem domain is not over integers but over reals.
+Coordinates or segment lengths are continuous values in the euclidean 2D space.
+From my current knowledge about the swi-prolog landscape, I only know of 2 libraries that does constraint programming over reals:&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://www.swi-prolog.org/pldoc/man?section=clpqr">&lt;code>clpqr&lt;/code>&lt;/a> installed by default in the swi-prolog&lt;/li>
+&lt;li>&lt;a href="https://github.com/ridgeworks/clpBNR">&lt;code>clpBNR&lt;/code>&lt;/a> which you can install as a pack in swi-prolog&lt;/li>
+&lt;/ul>
+&lt;p>&lt;code>clpqr&lt;/code> idea is to delay the evaluation of an operation until all input arguments are ground.
+This make the constraint propagation very weak, which is a big problem for us.&lt;/p>
+&lt;p>On the other hand, &lt;code>clpBNR&lt;/code> takes another approach, closer to the one used by &lt;code>clpfd&lt;/code> by using interval arithmetic.
+In this case, constraint propagation are much stronger at the expense of results precision.
+If you want to know more, you should have a read at the &lt;a href="https://ridgeworks.github.io/clpBNR/CLP_BNR_Guide/CLP_BNR_Guide.html">Guide to &lt;code>clpBNR&lt;/code>&lt;/a>.&lt;/p>
+&lt;p>To come back to our grammar, &lt;code>cplBNR&lt;/code> will allow us to use real arithmetic in all directions.
+This will come at the expense of efficiency and somewhat imprecise results.&lt;/p>
+&lt;p>Let&amp;rsquo;s try to rework our &lt;code>seg_length/2&lt;/code> predicate to use &lt;code>clpBNR&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>:- &lt;span style="color:#a6e22e">use_module&lt;/span>(&lt;span style="color:#a6e22e">library&lt;/span>(&lt;span style="color:#e6db74">clpBNR&lt;/span>)).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">seg_length&lt;/span>(&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(X1, Y1), &lt;span style="color:#a6e22e">point&lt;/span>(X2, Y2)), Len) :-
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> { Len &lt;span style="color:#f92672">==&lt;/span> &lt;span style="color:#a6e22e">sqrt&lt;/span>((X2 &lt;span style="color:#f92672">-&lt;/span> X1)&lt;span style="color:#e6db74">**&lt;/span>&lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#f92672">+&lt;/span> (Y2 &lt;span style="color:#f92672">-&lt;/span> Y1)&lt;span style="color:#e6db74">**&lt;/span>&lt;span style="color:#ae81ff">2&lt;/span>) }.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>First of all, the braces &lt;code>{}&lt;/code> wrapping the mathematical expression is to indicate that we are using &lt;code>clpBNR&lt;/code> arithmetic.
+Next, we have replace the &lt;code>is&lt;/code> operator with &lt;code>==&lt;/code> equality operator.
+With pure arithmetic, it does not make sense anymore to have an evaluation predicate since there are no predefined direction on how to evaluate things.
+All you can do is to use comparison predicate such as equality &lt;code>==&lt;/code> to say that both sides should be equal.&lt;/p>
+&lt;p>Let&amp;rsquo;s try our new predicate with the most general query:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">seg_length&lt;/span>(Seg, Len).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Seg &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>D)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Len&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#ae81ff">0.0&lt;/span>, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">_&lt;/span>C&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1.0&lt;/span>Inf, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">_&lt;/span>A&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1.0&lt;/span>Inf, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">_&lt;/span>D&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1.0&lt;/span>Inf, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">_&lt;/span>B&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1.0&lt;/span>Inf, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The last four lines tells us that the segment coordinates can take real values going from -infinity to infinity.
+If we look at the &lt;code>Len&lt;/code> variable, we can already see some constraint propagation happening!
+&lt;code>clpBNR&lt;/code> correctly deduced that &lt;code>Len&lt;/code> is related to the output of the square root function which can only be positive&amp;hellip;
+Well, not in math, but in computers, the &lt;code>sqrt&lt;/code> often only returns the non negative square root only.
+In our application of computing the length of a segment, this is exactly what we want, since a negative segment length would not make sense.&lt;/p>
+&lt;p>Let&amp;rsquo;s try some more queries, by adding some more information about the segment first point and the segment length &lt;em>after&lt;/em> the call to &lt;code>seg_length/2&lt;/code> to see some more constraint propagations:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">seg_length&lt;/span>(Seg, Len), Seg &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">seg&lt;/span>(P1, P2), P1 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), Len&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">1.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Seg &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Len &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>P1 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>P2 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">_&lt;/span>A&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">_&lt;/span>B&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1&lt;/span>).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>With this, &lt;code>clpBNR&lt;/code> has correctly deduced that the end point of &lt;code>Seg&lt;/code> can by anywhere between &lt;code>(-1, 1)&lt;/code>.
+In fact, this second point has to be on the &lt;em>circle&lt;/em> of center (0, 0) and radius 1:&lt;/p>
+&lt;div id="jxgbox2" class="jxgbox" style="width:400px; height:400px;">&lt;/div>
+&lt;script type="text/javascript">
+var board2 = JXG.JSXGraph.initBoard('jxgbox2', {boundingbox: [-2, 2, 2, -2], axis: true});
+var p = board2.create('point',[0,0], {name: 'P1'});
+var ci = board2.createElement('circle',["P1", 1], {strokeColor:'#00ff00',strokeWidth:2});
+&lt;/script>
+&lt;p>Now that we have pure real arithmetic, let&amp;rsquo;s go back to our definition of an equilateral triangle:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(A, B, C)), L, R).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>A &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B), B &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>D), C &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>E, &lt;span style="color:#66d9ef">_&lt;/span>F),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>D)), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>C, &lt;span style="color:#66d9ef">_&lt;/span>D), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>E, &lt;span style="color:#66d9ef">_&lt;/span>F)), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>E, &lt;span style="color:#66d9ef">_&lt;/span>F), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#66d9ef">_&lt;/span>A, &lt;span style="color:#66d9ef">_&lt;/span>B))|R],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">_&lt;/span>C&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1.0&lt;/span>Inf, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">_&lt;/span>A&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1.0&lt;/span>Inf, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">_&lt;/span>D&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1.0&lt;/span>Inf, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">_&lt;/span>B&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1.0&lt;/span>Inf, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">_&lt;/span>E&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1.0&lt;/span>Inf, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">_&lt;/span>F&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1.0&lt;/span>Inf, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf) .
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Success!
+Can we now &lt;em>draw&lt;/em> an equilateral triangle using from a fully ground triangle ?
+Here is an example of an equilateral triangle A, B, C of with side length of 2:&lt;/p>
+&lt;ul>
+&lt;li>point A (0, 0)&lt;/li>
+&lt;li>point B (2, 0)&lt;/li>
+&lt;li>point C (1, sqrt(3))&lt;/li>
+&lt;/ul>
+&lt;div id="jxgbox3" class="jxgbox" style="width:400px; height:400px;">&lt;/div>
+&lt;script type="text/javascript">
+var board = JXG.JSXGraph.initBoard('jxgbox3', {boundingbox: [-1, 4, 4, -1], axis: true});
+var p = board.create('point',[0,0], {name: 'A'});
+var p = board.create('point',[2,0], {name: 'B'});
+var p = board.create('point',[1,1.732051], {name: 'C'});
+var li = board.create('line',['A','B'], {straightFirst:false, straightLast:false, strokeColor:'#000000', strokeWidth:2});
+var li = board.create('line',['B','C'], {straightFirst:false, straightLast:false, strokeColor:'#000000', strokeWidth:2});
+var li = board.create('line',['C','A'], {straightFirst:false, straightLast:false, strokeColor:'#000000', strokeWidth:2});
+&lt;/script>
+&lt;p>So this &lt;em>should&lt;/em> work ?&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#a6e22e">sqrt&lt;/span>(&lt;span style="color:#ae81ff">3&lt;/span>)))), L, R).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>)), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#a6e22e">sqrt&lt;/span>(&lt;span style="color:#ae81ff">3&lt;/span>))), &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#a6e22e">sqrt&lt;/span>(&lt;span style="color:#ae81ff">3&lt;/span>)), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>))|R] .
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Yes, and we should be able to recognize an equilateral triangle from its segments too:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> {Y &lt;span style="color:#f92672">==&lt;/span> &lt;span style="color:#a6e22e">sqrt&lt;/span>(&lt;span style="color:#ae81ff">3&lt;/span>)},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(A, B, C)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, Y)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, Y), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>))]).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, Y)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Y&lt;span style="color:#e6db74">::&lt;/span> &lt;span style="color:#ae81ff">1.732050807568877&lt;/span>... .
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
+&lt;p>&lt;strong>NOTE&lt;/strong>
+We precompute &lt;code>sqrt(3)&lt;/code> because &lt;code>clpBNR&lt;/code> does not support expression for attributed variables, only numbers.&lt;/p>
+&lt;/blockquote>
+&lt;p>Nice!&lt;/p>
+&lt;h1 id="conclusion">Conclusion&lt;/h1>
+&lt;p>In this article, I have introduced a way to write pure prolog grammar to relate geometrical figures with a list of their graphical primitives by combining the DCG notation and constraint programming.
+Stay tune for the next blog post of this subject!&lt;/p></description></item></channel></rss>

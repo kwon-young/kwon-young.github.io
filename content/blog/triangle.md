@@ -1,7 +1,6 @@
 ---
 title: "Triangle"
 date: 2023-10-31T17:11:09+01:00
-draft: true
 ---
 
 {{< rawhtml >}}
@@ -209,6 +208,8 @@ This can be good, because it will allow us to get more solutions as we will see 
 This could be also bad, since the complexity of the code has risen dramatically and it could be quite easy to be trapped into an infinite recursion loop.
 But we will worry about this later.
 
+One new characteristic of the second results is that the grammar is now resistant to noise, i.e. non relevant graphical primitives.
+
 In the query above, we enumerate the solutions in a depth first manner, lengthening the list to infinity by searching for the last segment deeper and deeper.
 Instead, a breadth first search strategy could give us some more interesting solutions.
 This can be done by using the `length/2` predicate before the call to `phrase/3`.
@@ -412,6 +413,19 @@ Here is an example of an equilateral triangle A, B, C of with side length of 2:
 * point B (2, 0)
 * point C (1, sqrt(3))
 
+{{< rawhtml >}}
+<div id="jxgbox3" class="jxgbox" style="width:400px; height:400px;"></div>
+<script type="text/javascript">
+ var board = JXG.JSXGraph.initBoard('jxgbox3', {boundingbox: [-1, 4, 4, -1], axis: true});
+ var p = board.create('point',[0,0], {name: 'A'});
+ var p = board.create('point',[2,0], {name: 'B'});
+ var p = board.create('point',[1,1.732051], {name: 'C'});
+ var li = board.create('line',['A','B'], {straightFirst:false, straightLast:false, strokeColor:'#000000', strokeWidth:2});
+ var li = board.create('line',['B','C'], {straightFirst:false, straightLast:false, strokeColor:'#000000', strokeWidth:2});
+ var li = board.create('line',['C','A'], {straightFirst:false, straightLast:false, strokeColor:'#000000', strokeWidth:2});
+</script>
+{{< /rawhtml >}}
+
 So this *should* work ?
 
 ```prolog
@@ -438,4 +452,5 @@ Nice!
 
 # Conclusion
 
-
+In this article, I have introduced a way to write pure prolog grammar to relate geometrical figures with a list of their graphical primitives by combining the DCG notation and constraint programming.
+Stay tune for the next blog post of this subject!
