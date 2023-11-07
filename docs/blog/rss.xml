@@ -2,7 +2,7 @@
 &lt;link rel="stylesheet" type="text/css" href="https://jsxgraph.org/distrib/jsxgraph.css" />
 &lt;script type="text/javascript" src="https://jsxgraph.org/distrib/jsxgraphcore.js">&lt;/script>
 &lt;p>Since it has been a few years I started working on my &lt;a href="https://github.com/kwon-young/music">music notation grammar&lt;/a>, I thought about how I could explain what I am doing to other peoples.
-I believe that for anyone else than me, some of the prolog code in that repository would be quite hard to grok.&lt;/p>
+I believe that for anyone else than me, some of the prolog code in that repository might be quite hard to understand.&lt;/p>
 &lt;p>That&amp;rsquo;s why I thought of a simplified example that could explain some of the logic and design decision behind the project.
 This post is only part 1 of a series I plan to do on the subject.&lt;/p>
 &lt;h2 id="introduction">Introduction&lt;/h2>

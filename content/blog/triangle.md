@@ -9,7 +9,7 @@ date: 2023-10-31T17:11:09+01:00
 {{< /rawhtml >}}
 
 Since it has been a few years I started working on my [music notation grammar](https://github.com/kwon-young/music), I thought about how I could explain what I am doing to other peoples.
-I believe that for anyone else than me, some of the prolog code in that repository would be quite hard to grok.
+I believe that for anyone else than me, some of the prolog code in that repository might be quite hard to understand.
 
 That's why I thought of a simplified example that could explain some of the logic and design decision behind the project.
 This post is only part 1 of a series I plan to do on the subject.
