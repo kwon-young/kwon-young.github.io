@@ -4,8 +4,8 @@ date: 2023-10-31T17:11:09+01:00
 ---
 
 {{< rawhtml >}}
-<link rel="stylesheet" type="text/css" href="https://jsxgraph.org/distrib/jsxgraph.css" />
-<script type="text/javascript" src="https://jsxgraph.org/distrib/jsxgraphcore.js"></script>
+<script type="text/javascript" charset="UTF-8" src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css" />
 {{< /rawhtml >}}
 
 Since it has been a few years I started working on my [music notation grammar](https://github.com/kwon-young/music), I thought about how I could explain what I am doing to other peoples.

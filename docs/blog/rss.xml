@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kwon-Young Choi</title><link>https://kwon-young.github.io/blog/</link><description>Recent content in Blog on Kwon-Young Choi</description><generator>Hugo</generator><language>en-us</language><copyright>Creative Commons BY 3.0</copyright><lastBuildDate>Tue, 31 Oct 2023 17:11:09 +0100</lastBuildDate><atom:link href="https://kwon-young.github.io/blog/rss.xml" rel="self" type="application/xml"/><item><title>Triangle</title><link>https://kwon-young.github.io/blog/2023/triangle/</link><pubDate>Tue, 31 Oct 2023 17:11:09 +0100</pubDate><guid>https://kwon-young.github.io/blog/2023/triangle/</guid><description>
-&lt;link rel="stylesheet" type="text/css" href="https://jsxgraph.org/distrib/jsxgraph.css" />
-&lt;script type="text/javascript" src="https://jsxgraph.org/distrib/jsxgraphcore.js">&lt;/script>
+&lt;script type="text/javascript" charset="UTF-8" src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js">&lt;/script>
+&lt;link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css" />
 &lt;p>Since it has been a few years I started working on my &lt;a href="https://github.com/kwon-young/music">music notation grammar&lt;/a>, I thought about how I could explain what I am doing to other peoples.
 I believe that for anyone else than me, some of the prolog code in that repository might be quite hard to understand.&lt;/p>
 &lt;p>That&amp;rsquo;s why I thought of a simplified example that could explain some of the logic and design decision behind the project.
