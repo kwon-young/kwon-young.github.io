@@ -1,4 +1,205 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kwon-Young Choi</title><link>https://kwon-young.github.io/blog/</link><description>Recent content in Blog on Kwon-Young Choi</description><generator>Hugo</generator><language>en-us</language><copyright>Creative Commons BY 3.0</copyright><lastBuildDate>Tue, 31 Oct 2023 17:11:09 +0100</lastBuildDate><atom:link href="https://kwon-young.github.io/blog/rss.xml" rel="self" type="application/xml"/><item><title>Triangle</title><link>https://kwon-young.github.io/blog/2023/triangle/</link><pubDate>Tue, 31 Oct 2023 17:11:09 +0100</pubDate><guid>https://kwon-young.github.io/blog/2023/triangle/</guid><description>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kwon-Young Choi</title><link>https://kwon-young.github.io/blog/</link><description>Recent content in Blog on Kwon-Young Choi</description><generator>Hugo</generator><language>en-us</language><copyright>Creative Commons BY 3.0</copyright><lastBuildDate>Mon, 13 Nov 2023 09:09:04 +0900</lastBuildDate><atom:link href="https://kwon-young.github.io/blog/rss.xml" rel="self" type="application/xml"/><item><title>Epsilon</title><link>https://kwon-young.github.io/blog/2023/epsilon/</link><pubDate>Mon, 13 Nov 2023 09:09:04 +0900</pubDate><guid>https://kwon-young.github.io/blog/2023/epsilon/</guid><description>&lt;h1 id="epsilon">Epsilon&lt;/h1>
+&lt;p>This blog post is the second of a series on writing a pure prolog grammar to relate graphical primitives with high level semantic constructs.
+If you have not already, I advise to read the &lt;a href="https://kwon-young.github.io/blog/2023/triangle">first post of the series&lt;/a> that introduce the context and motivation of the subject at hand.&lt;/p>
+&lt;p>In the previous post, I have introduced how we can write a pure DCG predicate to relate a list of segments with geometrical figures like triangles and equilateral triangles.
+Let&amp;rsquo;s begin right from the last example of recognizing equilateral triangles:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>:- &lt;span style="color:#a6e22e">use_module&lt;/span>(&lt;span style="color:#a6e22e">library&lt;/span>(&lt;span style="color:#e6db74">clpBNR&lt;/span>)).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">seg_length&lt;/span>(&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(X1, Y1), &lt;span style="color:#a6e22e">point&lt;/span>(X2, Y2)), Len) :-
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> { Len &lt;span style="color:#f92672">==&lt;/span> &lt;span style="color:#a6e22e">sqrt&lt;/span>((X2 &lt;span style="color:#f92672">-&lt;/span> X1)&lt;span style="color:#e6db74">**&lt;/span>&lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#f92672">+&lt;/span> (Y2 &lt;span style="color:#f92672">-&lt;/span> Y1)&lt;span style="color:#e6db74">**&lt;/span>&lt;span style="color:#ae81ff">2&lt;/span>) }.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">triangle_cond&lt;/span>(&lt;span style="color:#a6e22e">triangle&lt;/span>(A, B, C), &lt;span style="color:#a6e22e">seg&lt;/span>(A, B), &lt;span style="color:#a6e22e">seg&lt;/span>(B, C), &lt;span style="color:#a6e22e">seg&lt;/span>(C, A)).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">triangle_cond&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(A, B, C), Seg1, Seg2, Seg3) :-
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">triangle_cond&lt;/span>(&lt;span style="color:#a6e22e">triangle&lt;/span>(A, B, C), Seg1, Seg2, Seg3),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg_length&lt;/span>(Seg1, Len),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg_length&lt;/span>(Seg2, Len),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg_length&lt;/span>(Seg3, Len).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">term&lt;/span>(X) --&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [X].
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">term&lt;/span>(X), [CurX] --&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [CurX],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(X).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(Triangle) --&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> { &lt;span style="color:#a6e22e">triangle_cond&lt;/span>(Triangle, Seg1, Seg2, Seg3) },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(Seg1),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(Seg2),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(Seg3).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> {Y &lt;span style="color:#f92672">==&lt;/span> &lt;span style="color:#a6e22e">sqrt&lt;/span>(&lt;span style="color:#ae81ff">3&lt;/span>)},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(A, B, C)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, Y)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, Y), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>))]).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Triangle &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, Y)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Y&lt;span style="color:#e6db74">::&lt;/span> &lt;span style="color:#ae81ff">1.732050807568877&lt;/span>... .
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="reals">Reals&lt;/h2>
+&lt;p>Here, \( \sqrt{3} \) is a real number. It is even called an irrational number, meaning that there is no finite finite floating point representation of that number.&lt;/p>
+&lt;p>One of the immediate consequence of this is that if we copy the number printed by the prolog top level and use it in our query, the query will fail:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(A, B, C)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1.732050807568877&lt;/span>)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1.732050807568877&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>))]).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">false&lt;/span>.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This is because clpBNR is able to distinguish \( \sqrt{3} \) and 1.732050807568877 and say that the equality relation &lt;code>==&lt;/code> does not hold between these two numbers.&lt;/p>
+&lt;p>We introduced this imprecision by copy pasting the number, but much bigger imprecision could be introduced if the graphical primitives were produced by external components.
+Maybe we extracted the graphical primitives from a geometry application, or recognize them from a learned shape detector model.&lt;/p>
+&lt;p>For example, the music engraving software I am using for my music grammar called Verovio engrave music scores with a precision of 0.05 pixels.
+This means that sometimes, symbols or lines are not perfectly aligned as they should but have small defects invisible when the music score is looked at at a reasonable scale.&lt;/p>
+&lt;p>Logically speaking, if the &lt;code>Y&lt;/code> coordinate of the second point of our triangle is not exactly \( \sqrt{3} \), it should not be an equilateral triangle.
+But, as we have seen, for many extra logical reasons, we can be in a situation where we want to recognize, generate and test equilateral triangles with only approximate coordinate values.&lt;/p>
+&lt;p>In order to deal with such imprecision, we are going to fully forget about the &lt;code>==&lt;/code> relation and instead use an upper bound imprecision called &lt;code>Epsilon&lt;/code>.&lt;/p>
+&lt;h2 id="epsilon-as-an-upper-bound-imprecision">Epsilon as an upper bound imprecision&lt;/h2>
+&lt;p>So, let&amp;rsquo;s go back to our &lt;code>seg_length/2&lt;/code> predicate:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">seg_length&lt;/span>(&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(X1, Y1), &lt;span style="color:#a6e22e">point&lt;/span>(X2, Y2)), Len) :-
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> { Len &lt;span style="color:#f92672">==&lt;/span> &lt;span style="color:#a6e22e">sqrt&lt;/span>((X2 &lt;span style="color:#f92672">-&lt;/span> X1)&lt;span style="color:#e6db74">**&lt;/span>&lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#f92672">+&lt;/span> (Y2 &lt;span style="color:#f92672">-&lt;/span> Y1)&lt;span style="color:#e6db74">**&lt;/span>&lt;span style="color:#ae81ff">2&lt;/span>) }.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The goal is to replace the &lt;code>==&lt;/code> relation with something less restrictive.
+Let&amp;rsquo;s say we want the predicate to succeed if difference between the length computed from the segment and the given length &lt;code>Len&lt;/code> is small enough.
+Let&amp;rsquo;s say if the difference is smaller than 0.1, we consider that this relation should hold.
+For this, let&amp;rsquo;s write a predicate called &lt;code>eps(A, B)&lt;/code> which holds if the distance between A and B is smaller than 0.1:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">eps&lt;/span>(A, B) :-
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> { &lt;span style="color:#a6e22e">abs&lt;/span>(A &lt;span style="color:#f92672">-&lt;/span> B) &lt;span style="color:#f92672">=&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">0.1&lt;/span> }.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Since we don&amp;rsquo;t know whether A or B is the bigger one, we use the absolute value of the difference between A and B.&lt;/p>
+&lt;p>Let&amp;rsquo;s test this predicate with different queries:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">eps&lt;/span>(A, B).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>A&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1.0&lt;/span>Inf, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>B&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1.0&lt;/span>Inf, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">eps&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, B).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>B&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#ae81ff">0.8999999999999999&lt;/span>, &lt;span style="color:#ae81ff">1.1&lt;/span>).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">eps&lt;/span>(A, &lt;span style="color:#ae81ff">1&lt;/span>).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>A&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#ae81ff">0.8999999999999999&lt;/span>, &lt;span style="color:#ae81ff">1.1&lt;/span>).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">eps&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1&lt;/span>).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">true&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">eps&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1.2&lt;/span>).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">false&lt;/span>.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The most general query is not very informative here, but clpBNR does remember the constraints imposed inside the &lt;code>eps/2&lt;/code> predicate.
+The following two queries does shows us more information and correctly narrows down the variable to \( \pm 0.1 \) of 1.&lt;/p>
+&lt;p>The final two queries could have been done with basic prolog arithmetic so no real surprises here.&lt;/p>
+&lt;p>Let&amp;rsquo;s apply &lt;code>eps/2&lt;/code> to our original &lt;code>seg_length/2&lt;/code> predicate:&lt;/p>
+&lt;pre tabindex="0">&lt;code>seg_length(seg(point(X1, Y1), point(X2, Y2)), Len) :-
+eps(Len, sqrt((X2 - X1)**2 + (Y2 - Y1)**2)).
+&lt;/code>&lt;/pre>&lt;p>And retry our previously failing query:&lt;/p>
+&lt;pre tabindex="0">&lt;code>?- phrase(triangle_dcg(equilateral_triangle(A, B, C)),
+[seg(point(0, 0), point(2, 0)),
+seg(point(2, 0), point(1, 1.732050807568877)),
+seg(point(1, 1.732050807568877), point(0, 0))]).
+A = point(0, 0),
+B = point(2, 0),
+C = point(1, 1.732050807568877) .
+&lt;/code>&lt;/pre>&lt;p>As expected, the queries now succeeds !&lt;/p>
+&lt;h2 id="eps-as-a-configurable-upper-bound-precision">Eps as a &lt;strong>configurable&lt;/strong> upper bound precision&lt;/h2>
+&lt;p>Let&amp;rsquo;s go back to our &lt;code>eps/2&lt;/code> predicate.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">eps&lt;/span>(A, B) :-
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> { &lt;span style="color:#a6e22e">abs&lt;/span>(A &lt;span style="color:#f92672">-&lt;/span> B) &lt;span style="color:#f92672">=&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">0.1&lt;/span> }.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Using 0.1 as an upper bound imprecision is an arbitrary choice.
+What if our application needs a smaller imprecision so that it does not show on the screen ?
+What if we want to recognize some triangles, but we don&amp;rsquo;t know how precise was the recognition process of the graphical primitives ?&lt;/p>
+&lt;p>Well, let&amp;rsquo;s make the upper bound configurable and see what happens:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">eps&lt;/span>(Eps, A, B) :-
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> { &lt;span style="color:#a6e22e">abs&lt;/span>(A &lt;span style="color:#f92672">-&lt;/span> B) &lt;span style="color:#f92672">=&amp;lt;&lt;/span> Eps }.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This means we will have to update the whole code and grammar to carry this new variable.
+Updating &lt;code>seg_length/2&lt;/code> is easy:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">seg_length&lt;/span>(&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(X1, Y1), &lt;span style="color:#a6e22e">point&lt;/span>(X2, Y2)), Len, Eps) :-
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">eps&lt;/span>(Eps, Len, &lt;span style="color:#a6e22e">sqrt&lt;/span>((X2 &lt;span style="color:#f92672">-&lt;/span> X1)&lt;span style="color:#e6db74">**&lt;/span>&lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#f92672">+&lt;/span> (Y2 &lt;span style="color:#f92672">-&lt;/span> Y1)&lt;span style="color:#e6db74">**&lt;/span>&lt;span style="color:#ae81ff">2&lt;/span>)).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Let&amp;rsquo;s continue with &lt;code>triangle_cond/2&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">triangle_cond&lt;/span>(&lt;span style="color:#a6e22e">triangle&lt;/span>(A, B, C), &lt;span style="color:#a6e22e">seg&lt;/span>(A, B), &lt;span style="color:#a6e22e">seg&lt;/span>(B, C), &lt;span style="color:#a6e22e">seg&lt;/span>(C, A), &lt;span style="color:#66d9ef">_&lt;/span>).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">triangle_cond&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(A, B, C, Len), Seg1, Seg2, Seg3, Eps) :-
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">triangle_cond&lt;/span>(&lt;span style="color:#a6e22e">triangle&lt;/span>(A, B, C), Seg1, Seg2, Seg3, Eps),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg_length&lt;/span>(Seg1, Len, Eps),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg_length&lt;/span>(Seg2, Len, Eps),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg_length&lt;/span>(Seg3, Len, Eps).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Okay, we have introduced the use of epsilon for checking the segment length.
+We also add a fourth argument to the &lt;code>equilateral_triangle/4&lt;/code> term to be able to see and specify the length of the sides.&lt;/p>
+&lt;p>We are almost finished, we just need to update the grammar:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(Triangle, Eps) --&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> { &lt;span style="color:#a6e22e">triangle_cond&lt;/span>(Triangle, Seg1, Seg2, Seg3, Eps) },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(Seg1),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(Seg2),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">term&lt;/span>(Seg3).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>And we are done !&lt;/p>
+&lt;p>Let&amp;rsquo;s now think what we can do with such a formalism.
+For now, I have identified three mode of operations:&lt;/p>
+&lt;ol>
+&lt;li>test&lt;/li>
+&lt;li>generate&lt;/li>
+&lt;li>recognize&lt;/li>
+&lt;/ol>
+&lt;h3 id="test">Test&lt;/h3>
+&lt;p>In test mode, we can now test the grammar with a set of fully annotated data.
+In our current example, we know that the equilateral triangle with points (0, 0), (2, 0), (1, ~1.73) and side length of 2 should match the segments with corresponding points.&lt;/p>
+&lt;p>Let&amp;rsquo;s try it:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1.73&lt;/span>), &lt;span style="color:#ae81ff">2&lt;/span>), Eps),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1.73&lt;/span>)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1.73&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>))]).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Eps&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#ae81ff">0.0017757883560709509&lt;/span>, &lt;span style="color:#ae81ff">1.0&lt;/span>Inf) ;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">false&lt;/span>.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Interesting !
+The fact that we can simply provide both side of the equation and test if the code succeeds or fails means that the code is highly testable.
+We could make a test suite with different triangles and test them in parallel.
+This means that we can later expand the grammar without fear of regressions.&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;strong>Note&lt;/strong>:
+Trust me, I have spent my whole PhD writing this kind of graphical grammars with no test framework in place.
+It was a &lt;strong>Nightmare&lt;/strong> :(&lt;/p>
+&lt;/blockquote>
+&lt;p>Here, clpBNR also tells us that this rule would succeed with an upper bound error over 0.0017757883560709509.
+However, we still don&amp;rsquo;t know if the real upper is ~0.00177&amp;hellip; or higher.
+But we can ask clpBNR to find the smallest error which would still allow the query to succeed:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1.73&lt;/span>), &lt;span style="color:#ae81ff">2&lt;/span>), Eps),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1.73&lt;/span>)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1.73&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>))]),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">global_minimize&lt;/span>(Eps, Eps).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Eps&lt;span style="color:#e6db74">::&lt;/span> &lt;span style="color:#ae81ff">0.00177&lt;/span>... .
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">false&lt;/span>.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>With the predicate &lt;code>global_minimize/2&lt;/code>, clpBNR has gradually reduced the epsilon interval from its upper bound and found that it can not go smaller than 0.00177 while respecting all constraints.
+Imagine now that the graphical primitives were extracted from an image.
+This means that we can now compute the largest error of the recognition process that is relevant for the semantic reconstruction of the document !
+Outside of this work, I have never encountered such a end-goal oriented computation of errors of a recognition process !
+Of course, you can compute metrics about the recognition process.
+But those metrics are only weakly linked to the quality of the semantic recognition process.&lt;/p>
+&lt;h3 id="recognize">Recognize&lt;/h3>
+&lt;p>I categorize a query as a recognition query if the graphical primitives are given but not the semantic structure.
+Unfortunately, in this mode, if we do not specify a reasonable epsilon, we will not get any useful answers because with a sufficiently big error, any semantic structures allowed by the grammar will be produced.&lt;/p>
+&lt;p>Fortunately, we can use the previous testing mode on a few annotated data to guestimate a reasonable epsilon value and use that for the recognition process:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> Eps&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0.00178&lt;/span>), &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(A, B, C, Len), Eps),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1.73&lt;/span>)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1.73&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>))]).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>A &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>B &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>C &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">1.73&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Eps&lt;span style="color:#e6db74">::&lt;/span>&lt;span style="color:#a6e22e">real&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0.0017800000000000001&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Len&lt;span style="color:#e6db74">::&lt;/span> &lt;span style="color:#ae81ff">2.00&lt;/span>... .
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="generate">Generate&lt;/h3>
+&lt;p>Finally, by using a epsilon of 0, we can go back to a perfect logical world and generate graphical structures that perfectly matches a given semantic structures:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">?-&lt;/span> &lt;span style="color:#a6e22e">phrase&lt;/span>(&lt;span style="color:#a6e22e">triangle_dcg&lt;/span>(&lt;span style="color:#a6e22e">equilateral_triangle&lt;/span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#a6e22e">sqrt&lt;/span>(&lt;span style="color:#ae81ff">3&lt;/span>)), &lt;span style="color:#ae81ff">2&lt;/span>), &lt;span style="color:#ae81ff">0&lt;/span>), L).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>L &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>)),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>), &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#a6e22e">sqrt&lt;/span>(&lt;span style="color:#ae81ff">3&lt;/span>))),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">seg&lt;/span>(&lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#a6e22e">sqrt&lt;/span>(&lt;span style="color:#ae81ff">3&lt;/span>)) , &lt;span style="color:#a6e22e">point&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>))] .
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This mode is mostly useful to test the grammar code and verify its purity and bidirectionality.&lt;/p>
+&lt;h2 id="conclusion">Conclusion&lt;/h2>
+&lt;p>With this article, I have introduced a way to deal with imprecision over reals rejecting the equality relationship.
+Instead, we use an explicit imprecision upper bound epsilon and do a comparison over a distance computed between two reals.&lt;/p>
+&lt;p>From this formulation, I showed how I can measure and constrain the imprecision for the different mode of testing, recognition and generation.&lt;/p>
+&lt;p>Now, let&amp;rsquo;s say that we extend the grammar to recognize a lot of other kind of geometrical figures.
+That means that each of the &lt;code>{triangle,rectangle,...}_cond&lt;/code> predicates will need epsilon to measures their imprecision as well.
+This means that we need to refer to our epsilon all over our grammar !
+I think the subject of my next post will be: how to deal with state ?&lt;/p>
+&lt;h3 id="exercise">Exercise&lt;/h3>
+&lt;p>By the way, have you notice a sneaky use of the &lt;code>==&lt;/code> relationship in the first clause of &lt;code>triangle_cond/3&lt;/code> ?&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-prolog" data-lang="prolog">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">triangle_cond&lt;/span>(&lt;span style="color:#a6e22e">triangle&lt;/span>(A, B, C), &lt;span style="color:#a6e22e">seg&lt;/span>(A, B), &lt;span style="color:#a6e22e">seg&lt;/span>(B, C), &lt;span style="color:#a6e22e">seg&lt;/span>(C, A), &lt;span style="color:#66d9ef">_&lt;/span>Eps).
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Let me know if you find it and how you would use &lt;code>eps/3&lt;/code> to replace them !&lt;/p></description></item><item><title>Triangle</title><link>https://kwon-young.github.io/blog/2023/triangle/</link><pubDate>Tue, 31 Oct 2023 17:11:09 +0100</pubDate><guid>https://kwon-young.github.io/blog/2023/triangle/</guid><description>
 &lt;script type="text/javascript" charset="UTF-8" src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js">&lt;/script>
 &lt;link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css" />
 &lt;p>Since it has been a few years I started working on my &lt;a href="https://github.com/kwon-young/music">music notation grammar&lt;/a>, I thought about how I could explain what I am doing to other peoples.
